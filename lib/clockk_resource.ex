@@ -26,14 +26,27 @@ defmodule ClockkIntegrationPlug.ClockkResource do
   end
 
   defp put_intergration_performed_actions(conn, _) do
-    if conn.private.clockk_resource do
-      Plug.Conn.put_private(
-        conn,
-        :integration_performed_actions,
-        List.first(conn.private.clockk_resource.integration_performed_actions)
-      )
-    else
-      conn
+    case conn.private.clockk_resource do
+      clockk_resources when is_list(clockk_resources) ->
+        integration_performed_actions =
+          Enum.map(clockk_resources, & &1.integration_performed_actions)
+          |> List.flatten()
+
+        Plug.Conn.put_private(
+          conn,
+          :integration_performed_actions,
+          integration_performed_actions
+        )
+
+      nil ->
+        conn
+
+      clockk_resource ->
+        Plug.Conn.put_private(
+          conn,
+          :integration_performed_actions,
+          List.first(conn.private.clockk_resource.integration_performed_actions)
+        )
     end
   end
 
